@@ -5,3 +5,8 @@ On first run:
 1. `docker-compose up webserver scheduler` - start webserver and scheduler
 
 On subsequent runs you can comment out the `initdb` step in the `docker-compose.yml` file and just do a standard `docker-compose up` command.
+
+# Usage
+1. Login with `admin` as the username and password.
+1. Do datasciencey things.
+
