@@ -3,6 +3,7 @@ from datetime import timedelta
 from airflow import DAG
 # Operators; we need this to operate!
 from airflow.operators.bash_operator import BashOperator
+from airflow.operators.docker_operator import DockerOperator
 from airflow.utils.dates import days_ago
 # These args will get passed on to each operator
 # You can override them on a per-task basis during operator initialization
@@ -38,9 +39,20 @@ dag = DAG(
 
 # t1, t2 and t3 are examples of tasks created by instantiating operators
 t1 = BashOperator(
-    task_id='print_date',
-    bash_command='date',
-    dag=dag,
+   task_id='print_date',
+   bash_command='date',
+   dag=dag,
+)
+
+tX = DockerOperator(
+    task_id='echo_something_else',
+    image='alpine',
+    api_version='auto',
+    auto_remove=True,
+    command='echo meow mix is okay',
+    docker_url="unix://var/run/docker.sock",
+    network_mode="bridge",
+    dag=dag
 )
 
 t2 = BashOperator(
@@ -75,4 +87,4 @@ t3 = BashOperator(
     dag=dag,
 )
 
-t1 >> [t2, t3]
+t1 >> tX >> [t2, t3]
