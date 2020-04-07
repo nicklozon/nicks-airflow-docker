@@ -3,6 +3,7 @@ version: "3"
 services:
 
   rabbit:
+    network_mode: host
     image: rabbitmq:3.7-management
     hostname: my-rabbit
     ports:
@@ -14,6 +15,7 @@ services:
       - RABBITMQ_DEFAULT_VHOST=/
 
   postgres:
+    network_mode: host
     image: "postgres:9.6"
     container_name: "postgres"
     environment:
@@ -27,17 +29,19 @@ services:
 
   # only needs to execute once
   initdb:
+    network_mode: host
     build: .
     entrypoint: bash -c "airflow db init && airflow users create --firstname Meow --lastname Mix --email meow@mix.com --username admin --password admin --role Admin"
     environment: 
       - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
-      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql://airflow:airflow@postgres:5432/airflow
-      - AIRFLOW__CELERY__BROKER_URL=pyamqp://guest:guest@rabbit:5672/
-      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@postgres:5432/airflow
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql://airflow:airflow@localhost:5432/airflow
+      - AIRFLOW__CELERY__BROKER_URL=pyamqp://guest:guest@localhost:5672/
+      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@localhost:5432/airflow
     depends_on:
       - postgres
 
   webserver:
+    network_mode: host
     build: .
     restart: always
     depends_on:
@@ -48,12 +52,13 @@ services:
       - "8080:8080"
     environment: 
       - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
-      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql://airflow:airflow@postgres:5432/airflow
-      - AIRFLOW__CELERY__BROKER_URL=pyamqp://guest:guest@rabbit:5672/
-      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@postgres:5432/airflow
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql://airflow:airflow@localhost:5432/airflow
+      - AIRFLOW__CELERY__BROKER_URL=pyamqp://guest:guest@localhost:5672/
+      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@localhost:5432/airflow
     entrypoint: airflow webserver
 
   scheduler:
+    network_mode: host
     build: .
     restart: always
     depends_on:
@@ -63,12 +68,15 @@ services:
       - ./airflow_files/dags:/opt/airflow/dags
     environment: 
       - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
-      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql://airflow:airflow@postgres:5432/airflow
-      - AIRFLOW__CELERY__BROKER_URL=pyamqp://guest:guest@rabbit:5672/
-      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@postgres:5432/airflow
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql://airflow:airflow@localhost:5432/airflow
+      - AIRFLOW__CELERY__BROKER_URL=pyamqp://guest:guest@localhost:5672/
+      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@localhost:5432/airflow
+    cap_add:
+      - ALL
     entrypoint: airflow scheduler
 
   flower:
+    network_mode: host
     build: .
     restart: always
     depends_on:
@@ -78,14 +86,15 @@ services:
       - ./airflow_files/dags:/opt/airflow/dags
     environment: 
       - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
-      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql://airflow:airflow@postgres:5432/airflow
-      - AIRFLOW__CELERY__BROKER_URL=pyamqp://guest:guest@rabbit:5672/
-      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@postgres:5432/airflow
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql://airflow:airflow@localhost:5432/airflow
+      - AIRFLOW__CELERY__BROKER_URL=pyamqp://guest:guest@localhost:5672/
+      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@localhost:5432/airflow
     ports:
       - "5555:5555"
     entrypoint: airflow celery flower
 
   worker:
+    network_mode: host
     build: .
     restart: always
     depends_on:
@@ -96,7 +105,9 @@ services:
       - ./airflow_files/dags:/opt/airflow/dags
     environment: 
       - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
-      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql://airflow:airflow@postgres:5432/airflow
-      - AIRFLOW__CELERY__BROKER_URL=pyamqp://guest:guest@rabbit:5672/
-      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@postgres:5432/airflow
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql://airflow:airflow@localhost:5432/airflow
+      - AIRFLOW__CELERY__BROKER_URL=pyamqp://guest:guest@localhost:5672/
+      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@localhost:5432/airflow
+    cap_add:
+      - ALL
     entrypoint: airflow celery worker

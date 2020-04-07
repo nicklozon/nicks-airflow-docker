@@ -50,7 +50,8 @@ tX = DockerOperator(
     api_version='auto',
     auto_remove=True,
     command='echo meow mix is okay',
-    docker_url="unix://var/run/docker.sock",
+    #docker_url="unix://var/run/docker.sock",
+    docker_url="tcp://192.168.65.1:2375",
     network_mode="bridge",
     dag=dag
 )
