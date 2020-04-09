@@ -20,6 +20,7 @@ services:
     entrypoint: bash -c "airflow db init && airflow users create --firstname Meow --lastname Mix --email meow@mix.com --username admin --password admin --role Admin"
     environment: 
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql://airflow:airflow@postgres:5432/airflow
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
     depends_on:
       - postgres
 
@@ -30,11 +31,13 @@ services:
       - postgres
     volumes:
       - ./airflow/dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
     ports:
       - "8080:8080"
     environment: 
       # I should really have the airflow.cfg file exposed in the repo
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql://airflow:airflow@postgres:5432/airflow
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
     entrypoint: airflow webserver
 
   scheduler:
@@ -44,6 +47,8 @@ services:
       - postgres
     volumes:
       - ./airflow/dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
     environment: 
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql://airflow:airflow@postgres:5432/airflow
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
     entrypoint: airflow scheduler
